@@ -8,26 +8,14 @@ logger = logging.getLogger(__name__)
 
 
 class Data:
-    def __init__(self, wb, sheet):
-        self.sheet = wb[sheet]
-        self.measures = self.getMeasures()
-        self.bounds = self.getBounds()
-        self.labels = self.getLabels()
+    def __init__(self, location, sheet):
+        self.data = pd.read_excel(location, sheet_name=sheet)
+        self.labels = self.data['Measure']
+        self.low_bound = self.data['Low Boundary']
+        self.high_bound= self.data['High Boundary']
 
-    def getData(self, **kwargs):
-        data = []
-        for values in self.sheet.iter_rows(**kwargs):
-            data.append(values)
-        return pd.DataFrame(data)
-
-    def getMeasures(self):
-        return self.getData(min_col=5, values_only=True)
-
-    def getBounds(self):
-        return self.getData(min_row=3, min_col=3, max_col=4, values_only=True)
-
-    def getLabels(self):
-        return self.getData(min_row=3, min_col=2, max_col=2, values_only=True)
+    def get_data_toplot(self, label):
+        return self.data[self.data['Measure'] == label]
 
 
 class Form:
@@ -36,33 +24,36 @@ class Form:
             self.data = data
             self.root = Tk()
             self.root.title('Blood Tests')
-            self.form = None
+            self.toplabel = None
+            self.metric = None
         except RuntimeError as e:
-            logger.exception('Failed to open the file', e)
+            logger.exception('Failed to load data', e)
+
+    def label_changed(self, *args):
+        self.toplabel['text'] = f'You selected: {self.metric.get()}'
+        data = self.data.get_data_toplot(self.metric.get())
+        print(data)
 
     def show(self):
-
-        labels = self.data.labels.values
-        metric = StringVar(self.root)
-        w = OptionMenu(self.root, metric, labels[0], *labels)
+        labels = self.data.labels.tolist()
+        self.metric = StringVar(self.root)
+        om = OptionMenu(self.root, self.metric, labels[0], *labels, command=self.label_changed)
+        om.grid(column=0, row=0)
         self.root.geometry('600x400+80+80')
+
         rightframe = Frame(self.root)
-        toplabel = Label(rightframe)
-        w.grid(column=0, row=0)
+        self.toplabel = Label(rightframe)
+        self.toplabel.pack()
+
+        plotFrame = Canvas(rightframe)
+        plotFrame.pack()
+
         rightframe.grid(column=1, row=0)
         self.root.mainloop()
 
 
 if __name__ == '__main__':
-
     _loc = "\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx"
-    _data = Data(openpyxl.load_workbook(_loc), 'Vadim')
-    _form = Form(_data)
-    print('Measures: ')
-    print(_data.measures.describe())
-    print('Bounds: ')
-    print(_data.bounds.describe())
-    print('Labels: ')
-    print(_data.labels.describe())
-
+    data = Data(_loc, 'Vadim')
+    _form = Form(data)
     _form.show()
