@@ -1,7 +1,8 @@
 import pandas as pd
 import openpyxl
-from tkinter import *
+import tkinter as tk
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,31 +23,43 @@ class Form:
     def __init__(self, data):
         try:
             self.data = data
-            self.root = Tk()
+            self.root = tk.Tk()
             self.root.title('Blood Tests')
             self.toplabel = None
+            self.plotFrame = None
             self.metric = None
         except RuntimeError as e:
             logger.exception('Failed to load data', e)
 
     def label_changed(self, *args):
         self.toplabel['text'] = f'You selected: {self.metric.get()}'
-        data = self.data.get_data_toplot(self.metric.get())
-        print(data)
+        self.drawchart(self.plotFrame)
+
+    def drawchart(self, container):
+        figure = plt.Figure(figsize=(5, 4), dpi=100)
+        ax2 = figure.add_subplot(111)
+        line = FigureCanvasTkAgg(figure, container)
+        df2 = self.data.get_data_toplot(self.metric.get())
+        df2.plot(kind='line', legend=True, ax=ax2, color='r', marker='o', fontsize=10)
+        ax2.set_title(self.toplabel['text'])
+        return line.get_tk_widget()
 
     def show(self):
         labels = self.data.labels.tolist()
-        self.metric = StringVar(self.root)
-        om = OptionMenu(self.root, self.metric, labels[0], *labels, command=self.label_changed)
+        self.metric = tk.StringVar(self.root)
+        om = tk.OptionMenu(self.root, self.metric, labels[0], *labels, command=self.label_changed)
         om.grid(column=0, row=0)
         self.root.geometry('600x400+80+80')
 
-        rightframe = Frame(self.root)
-        self.toplabel = Label(rightframe)
+        rightframe = tk.Frame(self.root)
+        self.toplabel = tk.Label(rightframe)
         self.toplabel.pack()
 
-        plotFrame = Canvas(rightframe)
-        plotFrame.pack()
+        self.plotFrame = tk.Canvas(rightframe)
+        self.plotFrame.pack()
+
+        graph = self.drawchart(self.plotFrame)
+        graph.pack()
 
         rightframe.grid(column=1, row=0)
         self.root.mainloop()
