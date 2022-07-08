@@ -1,5 +1,4 @@
 import pandas as pd
-import openpyxl
 import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -40,7 +39,7 @@ class Form:
         ax2 = figure.add_subplot(111)
         line = FigureCanvasTkAgg(figure, container)
         df2 = self.data.get_data_toplot(self.metric.get())
-        df2.plot(kind='line', legend=True, ax=ax2, color='r', marker='o', fontsize=10)
+        df2.plot(kind='line', legend=False, ax=ax2, color='r', marker='o', fontsize=8)
         ax2.set_title(self.toplabel['text'])
         return line.get_tk_widget()
 
