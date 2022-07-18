@@ -59,13 +59,14 @@ class Form:
 
         graph = self.drawchart(self.plotFrame)
         graph.pack()
+        # This is a test
 
         rightframe.grid(column=1, row=0)
         self.root.mainloop()
 
 
 if __name__ == '__main__':
-    _loc = "\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx"
+    _loc = "C:/TEMP/bloodtests.xlsx"
     data = Data(_loc, 'Vadim')
     _form = Form(data)
     _form.show()
