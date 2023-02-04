@@ -16,15 +16,6 @@ def printList(head):
     return res
 
 
-def addNode(h: Node, n: Node):
-    if not h:
-        return n
-    while h.next:
-        h = h.next
-    h.val = n
-    return h
-
-
 def list2number(h: Node):
     ret = 0
     mult = 1
@@ -46,11 +37,22 @@ def num2list(num: int):
     return ret
 
 
+def addNode(h: Node, n: Node):
+    if not h:
+        return n
+    cur = h
+    while cur.next:
+        cur = cur.next
+    cur.next = n
+    return h
+
+
 class Solution:
     def removeNthFromEnd(self, head: List[int], n: int):
         fast = slow = head
         for _ in range(n):
-            fast = fast.next
+            if fast:
+                fast = fast.next
         if not fast:
             return head.next
         while fast.next:
@@ -61,14 +63,11 @@ class Solution:
 
 
 if __name__ == '__main__':
-    # s = Solution()
-    # head = None
-    # for i in [3, 4, 11, 17, 8, 3, 7]:
-    #     head = addNode(head, Node(i))
-    #
-    # print(printList(head))
-    # s.removeNthFromEnd(head, 3)
-    # print(printList(head))
+    s = Solution()
+    head = None
+    for i in [3, 4, 11, 17, 8, 3, 7]:
+        head = addNode(head, Node(i))
 
-    for n in [12, 0, 3, 3354, 23, 45]:
-        print(f'{n}: {num2list(n)}')
+    print(printList(head))
+    s.removeNthFromEnd(head, 4)
+    print(printList(head))

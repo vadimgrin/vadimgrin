@@ -11,12 +11,6 @@ class ListNode:
     def __str__(self):
         return str(self.val)
 
-
-class Solution:
-    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
-        pass
-
-
 def addNode(head, node):
     idx = head if head else node
     while idx.next:
@@ -32,6 +26,11 @@ def printList(h):
         h = h.next
     res.append(h.val)
     return res
+
+
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        pass
 
 
 if __name__ == '__main__':
