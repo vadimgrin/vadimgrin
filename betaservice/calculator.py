@@ -4,7 +4,7 @@ from datetime import timedelta
 from collections import defaultdict
 from decimal import Decimal
 import datetime
-import bisect, timeit
+import bisect
 
 ##############################################
 #
@@ -51,12 +51,12 @@ def dailyReturn(price_t0, price_t1):
 
 
 class Calculator:
-    def __init__(self, cache):
+    def __init__(self, cache=None):
         self.cache = cache
 
     def calcVariance(self, values):
         if not values or len(values) < 2:  # assumption here is duration will always be more than 1 day
-            raise BusinessException   # basic validation but need to expand
+            raise BusinessException("Bad Values", RuntimeError)   # basic validation but need to expand
         count = len(values)
         _avg = math.fsum(values) / count
         numerator = 0
@@ -68,7 +68,7 @@ class Calculator:
 
     def calcCovariance(self, tkr_values, base_values):
         if not (tkr_values and base_values) or min(len(tkr_values), len(base_values)) < 2:
-            raise BusinessException
+            raise BusinessException("Bad Values", RuntimeError)
         tkr_count = len(tkr_values)    # assumption here is len(tkr_values) == len(base_values)
         bs_count = len(base_values)
         tkr_avg = math.fsum(tkr_values) / tkr_count
@@ -101,16 +101,16 @@ class Cache:  # Simple DoD implementation of the cache.
     # This implementation of cache uses python dictionary.
     # The structure is demonstrated below with gaps in data highlighted.
     # Given the specific nature of this data, the date::ticker key approach allows for lateral scaling without increasing lookup time complexity
-    # cache = {
-    #             "2021-01-02": {"MSFT": 125, "YHO": 300, "F": 250,            },
-    #             "2021-01-03": {"MSFT": 125, "YHO": 300,           "ABC": 250 },
-    #             ...
-    #             "2021-01-05": {"MSFT": 125, "YHO": 300, "F": 250, "ZZZ": 0.01},
-    #             "2021-01-03": {"MSFT": 125, "YHO": 300, "F": 250},
-    #         }
+    # Also allows to initialize from the data source or locally
+    sampleData = {
+                "2021-01-02": {"MSFT": 125, "YHO": 300, "F": 250,},
+                "2021-01-03": {"MSFT": 125, "YHO": 300, "ABC": 250 },
+                "2021-01-05": {"MSFT": 125, "YHO": 300, "F": 250, "ZZZ": 0.01},
+                "2021-01-03": {"MSFT": 125, "YHO": 300, "F": 250},
+            }
 
-    def __init__(self, datapath):
-        self._cache = readfromcsv(datapath)
+    def __init__(self, datapath=None, initData=None):
+        self._cache = readfromcsv(datapath) if datapath else initData
         self.sortedkeys = sorted(self._cache.keys())
 
     def getValsForDates(self, ticker, enddt, duration):
