@@ -93,6 +93,7 @@ class Calculator:
             _var = self.calcVariance(_tkr_values)
             _covar = self.calcCovariance(_tkr_values, _base_values)
             result[dt] = _covar / _var
+
         return result
 
 
@@ -126,7 +127,8 @@ class Service:
         self.calculator = calc or Calculator(self.cache)
 
     def calcBeta(self, ticker: str, tickerBaseline: str, startDate: str, endDate: str, betaDurationDays: int) -> List:
-        return self.calculator.calcBeta(ticker, tickerBaseline, startDate, endDate, betaDurationDays)
+        result =  self.calculator.calcBeta(ticker, tickerBaseline, startDate, endDate, betaDurationDays)
+        return list(map(lambda x: round(x,4), result.values()))
 
 
 if __name__ == "__main__":
@@ -146,4 +148,4 @@ if __name__ == "__main__":
     ]
     for use_case in test_data:
         result = svc.calcBeta(*use_case)
-        print(f"{use_case=}\n{result=}")
+        print(f"{use_case=}:\t{result=}")
