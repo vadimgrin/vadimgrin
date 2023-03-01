@@ -12,19 +12,22 @@ logger = logging.getLogger(__name__)
 class Data:
     def __init__(self, location, sheet):
         self.data = pd.read_excel(location, sheet_name=sheet)
+        self.data.rename_axis(['Date'])
         self.labels = self.data['Measure']
-        self.low_bound = self.data['Low Boundary']
-        self.high_bound= self.data['High Boundary']
 
     def get_data_toplot(self, label):
+        _low = _hi = None
         row = self.data[self.data['Measure'] == label]
         a = row.drop(columns=["Category", "Measure", "Low Boundary", "High Boundary"])
         a = a.fillna(method='ffill', axis=1)
         a = a.transpose()
-        a = a.rename_axis(['date'])
         if not a.empty:
             a = a.iloc[:, 0].rename('Measure')
-        return a
+            _low = a.apply(lambda x: row['Low Boundary'].iloc[0])
+            _low = pd.DataFrame(_low).iloc[:, 0].rename('Low Boundary')
+            _hi = a.apply(lambda x: row['High Boundary'].iloc[0])
+            _hi = pd.DataFrame(_hi).iloc[:, 0].rename('High Boundary')
+        return a, _low, _hi
 
 
 class Form:
@@ -47,9 +50,13 @@ class Form:
         ax1 = figure.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(figure, self.root)
         self.canvas.get_tk_widget().grid(column=1, row=1)
-        df1 = self.data.get_data_toplot(self.option.get())
-        print(df1.to_string())
+        df1, l, h = self.data.get_data_toplot(self.option.get())
         if not df1.empty:
+            print(df1.to_string())
+            print("Lower Bound:", l.to_string())
+            print("Upper Bound:", h.to_string())
+            l.plot(kind='line', legend=True, ax=ax1)
+            h.plot(kind='line', legend=True, ax=ax1)
             df1.plot(kind='line', legend=True, ax=ax1)
             ax1.set_title(self.option.get())
         return self.canvas
@@ -67,5 +74,6 @@ class Form:
 
 
 if __name__ == '__main__':
+    # test()
     _form = Form()
     _form.show()
