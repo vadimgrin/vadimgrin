@@ -1,8 +1,6 @@
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
-
-app = Dash(__name__)
 
 
 class Data:
@@ -23,28 +21,36 @@ class Data:
             a = row.transpose()
             a = a.rename(columns=lambda x: 'Value')
             a['Value'] = pd.to_numeric(a['Value'])
-            a['Low Bound'] = _lo
             a['High Bound'] = _hi
+            a['Low Bound'] = _lo
         return a
 
 
-if __name__ == '__main__':
-    d = Data("\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx", 'Vadim')
-    df = d.get_data_toplot('Sodium')
+_data = Data("\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx", 'Vadim')
+app = Dash(__name__)
 
-    fig = px.line(df, y=['Value', 'Low Bound', 'High Bound'])
 
-    app.layout = html.Div(children=[
-        html.H1(children='Blood Test Results'),
-
-        html.Div(children='''
-            This graph shows historical results for any individual test metric
-        '''),
-
-        dcc.Graph(
-            id='results',
-            figure=fig
-        )
+app.layout = html.Div(children=[
+    html.H1(children='Blood Test Results'),
+    html.Div([
+        html.Div([dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})], style={'display': 'inline-block'}),
+        html.Div([
+                    html.H1(id='id_title'),
+                    dcc.Graph(id='id_graph')
+                 ], style={'display': 'inline-block', 'vertical-align': 'top'})
     ])
+])
 
+@app.callback(
+    Output(component_id='id_graph', component_property='figure'),
+    Output(component_id='id_title', component_property='children'),
+    Input(component_id='id_metric', component_property='value')
+)
+def update_graph(metric):
+    df = _data.get_data_toplot(metric)
+    fig = px.line(df, y=['Value', 'High Bound', 'Low Bound'], markers=[True, False, False], text='Value')
+    return fig, metric
+
+
+if __name__ == '__main__':
     app.run_server(debug=True)
