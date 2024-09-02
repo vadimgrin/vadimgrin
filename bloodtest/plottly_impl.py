@@ -1,6 +1,7 @@
 from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 import pandas as pd
+import plotly.graph_objects as go
 
 
 class Data:
@@ -26,20 +27,43 @@ class Data:
         return a
 
 
-_data = Data("\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx", 'Vadim')
+_file_path = "\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx"
+_data = Data(_file_path, 'Vadim')
 app = Dash(__name__)
 
 
 app.layout = html.Div(children=[
     html.H1(children='Blood Test Results'),
     html.Div([
-        html.Div([dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})], style={'display': 'inline-block'}),
+        html.Div([
+                    dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})
+                 ], style={
+                            'display': 'inline-block',
+                            'height': '510px',
+                            'overflow-y': 'scroll'
+                          }),
         html.Div([
                     html.H1(id='id_title'),
                     dcc.Graph(id='id_graph')
-                 ], style={'display': 'inline-block', 'vertical-align': 'top'})
+                 ], style={
+                            'display': 'inline-block',
+                            'vertical-align': 'top',
+                            'width': '50vw',
+                          })
     ])
 ])
+
+
+def getFigure(df, mode='px'):
+    if mode == 'px':
+        return px.line(df, y=['Value', 'High Bound', 'Low Bound'], markers='Value')
+    else:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=df.index, y=df['High Bound'], mode='lines', name=f'High ({df["High Bound"][0]})'))
+        fig.add_trace(go.Scatter(x=df.index, y=df['Value'], mode='lines+markers+text', name='Value', text=df['Value'], textposition='top center'))
+        fig.add_trace(go.Scatter(x=df.index, y=df['Low Bound'], mode='lines', name=f'Low ({df["Low Bound"][0]})'))
+        return fig
+
 
 @app.callback(
     Output(component_id='id_graph', component_property='figure'),
@@ -48,7 +72,7 @@ app.layout = html.Div(children=[
 )
 def update_graph(metric):
     df = _data.get_data_toplot(metric)
-    fig = px.line(df, y=['Value', 'High Bound', 'Low Bound'], markers=[True, False, False], text='Value')
+    fig = getFigure(df, mode='go')
     return fig, metric
 
 
