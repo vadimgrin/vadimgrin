@@ -37,19 +37,18 @@ def scrape(html_bytes, pattern):
 
 
 def webprint(values):
-    # hist_file = 'C:/Temp/houseValues.csv'
-    hist_file = 'C:/Temp/houseValues_new.xlsx'
+    hist_file = 'C:/Temp/houseValues.xlsx'
     try:
-        df_hist = pd.read_excel(hist_file)
+        df_hist = pd.read_excel(hist_file, parse_dates=[1])
         df_hist['Date'] = pd.to_datetime(df_hist['Date'])
     except Exception as e:
         print(f'Failed to read historical data from {hist_file} due to {e}... Initializing to default frame')
         df_hist = pd.DataFrame(Columns=['Date' + homes.keys()])
     finally:
         df_hist = df_hist.append(values, ignore_index=True)
-        df_hist.to_excel(hist_file, float_format='%.0f')
+        df_hist.to_excel(hist_file, float_format='%.0f', index=False)
         with tempfile.TemporaryFile(suffix='.html', delete=False) as fp:
-            fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format).replace('<tr>', '<tr align="right">'), 'utf-8'))
+            fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format, index=False).replace('<tr>', '<tr align="right">'), 'utf-8'))
         print(fp.name)
         webbrowser.open(fp.name)
         time.sleep(2)
