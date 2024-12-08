@@ -37,15 +37,20 @@ def scrape(html_bytes, pattern):
 
 
 def webprint(values):
-    hist_file = 'C:/Temp/houseValues.xlsx'
+    hist_file = "//MYBOOKLIVE/Public/Vadim Documents/Real Estate/houseValues.xlsx"
     try:
         df_hist = pd.read_excel(hist_file, parse_dates=[1])
         df_hist['Date'] = pd.to_datetime(df_hist['Date'])
+        exclude_column = 'Date'
+        columns_to_convert = [col for col in df_hist.columns if col != exclude_column]
+        df_hist[columns_to_convert] = df_hist[columns_to_convert].astype('int64')
     except Exception as e:
         print(f'Failed to read historical data from {hist_file} due to {e}... Initializing to default frame')
         df_hist = pd.DataFrame(Columns=['Date' + homes.keys()])
     finally:
-        df_hist = df_hist.append(values, ignore_index=True)
+        # df_hist = df_hist.append(values, ignore_index=True)
+        values['Date'] = values['Date'].astype('datetime64[ns]')
+        df_hist = pd.concat([df_hist, values])
         df_hist.to_excel(hist_file, float_format='%.0f', index=False)
         with tempfile.TemporaryFile(suffix='.html', delete=False) as fp:
             fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format, index=False).replace('<tr>', '<tr align="right">'), 'utf-8'))
@@ -68,7 +73,8 @@ def report():
         total += amount
         values[k] = amount
         print(f"{k:12}: {amount:>14,.2f}")
-    webprint(values)
+    _vals = pd.DataFrame.from_dict({k: [v] for k, v in values.items()})
+    webprint(_vals)
 
 
 if __name__ == '__main__':
