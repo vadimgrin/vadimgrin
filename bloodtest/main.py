@@ -1,9 +1,12 @@
 import tkinter as tk
+
+import pandas
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import random
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from pandastable import Table, TableModel, config
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,19 +33,20 @@ class Data:
         return a, _low, _hi
 
 
-class Form:
+class Form(tk.Frame):
     def __init__(self):
         self.root = tk.Tk()
+        self.root.geometry("1000x500")
         self.root.title('Blood Tests')
-        self.toplabel = None
+        self.top_label = tk.Label(self.root)
         self.option = tk.StringVar(self.root)
-        self.om = None
+        self.option_menu = None
         self.canvas = None
+        self.tbl_frame = tk.Frame(self.root)
         self.data = Data("\\\MYBOOKLIVE\\Public\\Vadim Documents\\BloodTests Vadim\\Blood Test Results.xlsx", 'Vadim')
 
     def label_changed(self, *args):
-        self.toplabel['text'] = f'You selected: {self.option.get()}'
-        print(f"You selected {self.option.get()}")
+        self.top_label['text'] = f'{self.option.get()}'
         return self.drawchart()
 
     def drawchart(self):
@@ -52,28 +56,25 @@ class Form:
         self.canvas.get_tk_widget().grid(column=1, row=1)
         df1, l, h = self.data.get_data_toplot(self.option.get())
         if not df1.empty:
-            print(df1.to_string())
-            print("Lower Bound:", l.to_string())
-            print("Upper Bound:", h.to_string())
-            l.plot(kind='line', legend=True, ax=ax1)
-            h.plot(kind='line', legend=True, ax=ax1)
-            df1.plot(kind='line', legend=True, ax=ax1)
+            df_m = pandas.merge(df1, l, left_index=True, right_index=True).merge(h, left_index=True, right_index=True)
+            print(df_m)
+            df_m.plot(kind='line', legend=True, ax=ax1)
             ax1.set_title(self.option.get())
+            pt = Table(self.tbl_frame, dataframe=df_m, showtoolbar=True, showstatusbar=True)
+            pt.show()
         return self.canvas
 
     def show(self):
         labels = self.data.labels.tolist()
-        self.om = tk.OptionMenu(self.root, self.option, labels[0], *labels, command=self.label_changed)
-        self.om.grid(column=0, row=0)
-
-        self.toplabel = tk.Label(self.root)
-        self.toplabel.grid(column=1, row=0)
+        self.option_menu = tk.OptionMenu(self.root, self.option, labels[0], *labels, command=self.label_changed)
+        self.option_menu.grid(column=0, row=0)
+        self.top_label.grid(column=1, row=0)
+        self.tbl_frame.grid(column=0, row=1)
 
         self.drawchart()
         self.root.mainloop()
 
 
 if __name__ == '__main__':
-    # test()
     _form = Form()
     _form.show()
