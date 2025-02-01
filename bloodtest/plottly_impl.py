@@ -32,26 +32,15 @@ _data = Data(_file_path, 'Vadim')
 app = Dash(__name__)
 
 
-app.layout = html.Div(children=[
-    html.H1(children='Blood Test Results'),
-    html.Div([
-        html.Div([
-                    dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})
-                 ], style={
-                            'display': 'inline-block',
-                            'height': '510px',
-                            'overflow-y': 'scroll'
-                          }),
-        html.Div([
-                    html.H1(id='id_title'),
-                    dcc.Graph(id='id_graph')
-                 ], style={
-                            'display': 'inline-block',
-                            'vertical-align': 'top',
-                            'width': '50vw',
-                          })
-    ])
-])
+app.layout = html.Div([
+    html.H1('Blood Test Results'),   # <== Row1 of Div1
+    html.Div([html.Div([html.Div([dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})], style={ 'display': 'inline-block', 'height': '810px', 'overflow-y': 'scroll'}),
+                        html.Div([html.H1(id='id_title'),
+                                  dcc.Graph(id='id_graph'),
+                                  html.Table([html.Thead(html.Tr([html.Th('A'),html.Th('B'),html.Th('C')])),html.Tbody([html.Tr([html.Td(1),html.Td(2),html.Td(3)])])])
+                                 ], style={'display': 'inline-block','vertical-align': 'top','width': '50vw'}),
+                ],style={'display': 'flex', 'flexDirection': 'row'})
+], style={'display': 'flex', 'flexDirection': 'column'})])
 
 
 def getFigure(df, mode='px'):
@@ -77,4 +66,4 @@ def update_graph(metric):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
