@@ -2,7 +2,7 @@ from dash import Dash, html, dcc, Input, Output, dash_table
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
-
+import random
 
 class Data:
     def __init__(self, location, sheet):
@@ -90,12 +90,14 @@ def getFigure(df, mode='px'):
 @app.callback(
     Output(component_id='id_graph', component_property='figure'),
     Output(component_id='id_title', component_property='children'),
+    Output(component_id='id_table1', component_property='data'),
     Input(component_id='id_metric', component_property='value')
 )
 def update_graph(metric):
     df = _data.get_data_toplot(metric)
     fig = getFigure(df, mode='go')
-    return fig, metric
+    dt = df.to_dict(orient='records')
+    return fig, metric, dt
 
 
 if __name__ == '__main__':
