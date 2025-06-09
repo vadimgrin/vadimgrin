@@ -14,7 +14,8 @@ class Data:
 
     def get_data_toplot(self, label):
         row = self.data[self.data['Measure'] == label]
-        row = row.fillna(method='ffill', axis=1)
+        # row = row.fillna(method='ffill', axis=1)
+        row = row.ffill(axis=1)
         if not row.empty:
             a = row.transpose()
             a = a.rename(columns=lambda x: 'Value')
@@ -24,14 +25,15 @@ class Data:
             a.drop(['Measure', 'High Boundary', 'Low Boundary'], inplace=True)
             a = a.astype({'Measure': 'string'})
             a['Value'] = pd.to_numeric(a['Value'])
-            a.index.astype('datetime64')
-        return a[['Measure', 'Value', 'Low Bound', 'High Bound']]
+            a = a.reset_index().rename(columns={'index': 'Sample Date'})
+            a['Sample Date'].astype('datetime64[ns]')
+        return a[['Sample Date', 'Measure', 'Value', 'Low Bound', 'High Bound']]
 
     def dash_table(self, df):
         mytable = dash_table.DataTable(
             id='id_table1',
-            columns=[{"name": i, "id": i, 'type': 'numeric', 'format': {'specifier': ',.0f'}} if i not in [
-                'phone_number'] else {"name": i, "id": i} for i in df.columns],
+            columns=[{"name": i, "id": i, 'type': 'numeric', 'format': {'specifier': ',.1f'}} if i not in [
+                'Measure'] else {"name": i, "id": i} for i in df.columns],
             data=df.to_dict('records'),
             style_as_list_view=True,
             style_cell={'padding': '2px'},
@@ -39,8 +41,8 @@ class Data:
             style_table={'height': '600px', 'overflowY': 'auto'},
             style_cell_conditional=[
                 {
-                    'if': {'column_id': 'phone_number'},
-                    'textAlign': 'center'
+                    'if': {'column_id': 'Sample Date'},
+                    'textAlign': 'left', 'width': '50px',
                 },
             ],
             style_data_conditional=[
@@ -63,10 +65,10 @@ _data = Data(_file_path, 'Vadim')
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1('Blood Test Results'),  # <== Row1 of Div1
+    html.H1('Blood Test Results'),
     html.Div([html.Div([html.Div(
         [dcc.RadioItems(_data.labels, _data.labels[0], id='id_metric', labelStyle={'display': 'block'})],
-        style={'display': 'inline-block', 'height': '810px', 'overflow-y': 'scroll'}),
+        style={'display': 'inline-block', 'height': '60vw', 'overflow-y': 'scroll'}),
                         html.Div([html.H1(id='id_title'),
                                   dcc.Graph(id='id_graph'),
                                   _data.dash_table(_data.get_data_toplot(_data.labels[0])),
