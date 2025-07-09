@@ -11,7 +11,7 @@ if __name__ == '__main__':
     )
 
     # Step 2: Add indexing factors (using 2024 as the indexing year)
-    indexing_year = 2024
+    indexing_year = 2030
     average_wage_index = {
         1991: 21081.66, 1992: 22229.79, 1993: 23132.67, 1994: 23753.53,
         1995: 24705.66, 1996: 25913.90, 1997: 27426.00, 1998: 28861.44,
@@ -21,7 +21,8 @@ if __name__ == '__main__':
         2011: 42979.61, 2012: 44321.67, 2013: 44888.16, 2014: 46481.52,
         2015: 48098.63, 2016: 48642.15, 2017: 50321.89, 2018: 52145.80,
         2019: 54099.99, 2020: 55528.05, 2021: 60575.07, 2022: 61480.22,
-        2023: 63574.19, 2024: 65350.00
+        2023: 63574.19, 2024: 65350.00, 2025: 68574.19, 2026: 70350.00,   #  <== These are estimates
+        2027: 72574.19, 2028: 75350.00, 2029: 77574.19, 2030: 79350.00,   #  <== These are estimates
     }
 
     df['AvgWageYear'] = df['Work Year'].map(average_wage_index)
@@ -34,8 +35,8 @@ if __name__ == '__main__':
     aime = total_indexed_earnings / (35 * 12)
 
     # Step 4: Compute PIA using 2025 bend points (from https://www.ssa.gov/OACT/COLA/bendpoints.html)
-    bend_point1 = 1226
-    bend_point2 = 7391
+    bend_point1 = 1426   #  <== These are estimates
+    bend_point2 = 7891   #  <== These are estimates
 
     def compute_pia(aime):
         if aime <= bend_point1:
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     pia_70 = pia * 1.24   # ~8% annual increase after FRA
 
     # Output
-    print(f"AIME: ${aime:.2f}")
-    print(f"PIA at age 62: ${pia_62:.2f}")
-    print(f"PIA at age 67 (FRA): ${pia_67:.2f}")
-    print(f"PIA at age 70: ${pia_70:.2f}")
+    print(f"AIME:               ${aime:9,.2f}")
+    print(f"PIA at age 62:      ${pia_62:9,.2f}")
+    print(f"PIA at age 67 (FRA):${pia_67:9,.2f}")
+    print(f"PIA at age 70:      ${pia_70:9,.2f}")
