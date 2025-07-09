@@ -59,7 +59,6 @@ def webprint(values):
         worksheet.set_column('B:H', None, format_float)
         worksheet.set_column('A:A', None, format_date)
         writer.close()
-        # df_hist.to_excel(hist_file, float_format='%.0f', index=False)
         print(f"Saving data to \n{df_hist}")
         with tempfile.TemporaryFile(suffix='.html', delete=False) as fp:
             fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format, index=False).replace('<tr>', '<tr align="right">'), 'utf-8'))
