@@ -37,7 +37,7 @@ def scrape(html_bytes, pattern):
 
 
 def webprint(values):
-    hist_file = "//MYBOOKLIVE/Public/Vadim Documents/Real Estate/houseValues.xlsx"
+    hist_file = "E:/Documents/Real Estate/houseValues.xlsx"
     try:
         df_hist = pd.read_excel(hist_file, parse_dates=[1])
         df_hist['Date'] = pd.to_datetime(df_hist['Date'])
