@@ -3,7 +3,7 @@ from dash import Dash, html, dcc, Input, Output, dash_table
 import plotly.graph_objects as go
 from datetime import datetime
 
-file_path = "E:/Documents/BloodTests Vadim/Blood Tests.xlsx"
+file_path = "E:/Vadim Documents/BloodTests Vadim/Blood Tests.xlsx"
 sheet_name = "Vadim"
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 df = df[df["Measure"].notna()].reset_index(drop=True)
@@ -20,7 +20,8 @@ app.layout = html.Div([
             value=df["Measure"].iloc[0],
             labelStyle={"display": "block"}
         )
-    ], style={"width": "20%", "display": "inline-block", "verticalAlign": "top"}),
+    ], style={"width": "20%", "display": "inline-block", "verticalAlign": "top", 'height': '810px', 'overflow-y': 'scroll'}),
+
 
     html.Div([
         dcc.Graph(id="measure-plot"),
@@ -29,7 +30,7 @@ app.layout = html.Div([
             style_table={"overflowX": "auto"},
             style_cell={"textAlign": "center"}
         )
-    ], style={"width": "75%", "display": "inline-block", "paddingLeft": "20px"})
+    ], style={"width": "75%", "display": "inline-block", 'height': '810px', "paddingLeft": "20px"})
 ])
 
 
