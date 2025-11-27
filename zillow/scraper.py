@@ -37,9 +37,9 @@ def scrape(html_bytes, pattern):
 
 
 def webprint(values):
-    hist_file = "E:/Documents/Real Estate/houseValues.xlsx"
+    hist_file = "E:/Vadim Documents/Real Estate/houseValues.xlsx"
     try:
-        df_hist = pd.read_excel(hist_file, parse_dates=[1])
+        df_hist = pd.read_excel(hist_file, parse_dates=[1], date_format="%Y-%m-%d")
         df_hist['Date'] = pd.to_datetime(df_hist['Date'])
         exclude_column = 'Date'
         columns_to_convert = [col for col in df_hist.columns if col != exclude_column]
@@ -50,6 +50,7 @@ def webprint(values):
     finally:
         values['Date'] = values['Date'].astype('datetime64[ns]')
         df_hist = pd.concat([df_hist, values])
+        df_hist = df_hist.reset_index(drop=True)
         writer = pd.ExcelWriter(hist_file, engine='xlsxwriter', datetime_format='YYYY-MM-DD')
         df_hist.to_excel(writer, sheet_name='Sheet1', index=False)
         workbook = writer.book
@@ -59,7 +60,7 @@ def webprint(values):
         worksheet.set_column('B:H', None, format_float)
         worksheet.set_column('A:A', None, format_date)
         writer.close()
-        print(f"Saving data to \n{df_hist}")
+        print(f"Saving data to {hist_file}\n{df_hist}")
         with tempfile.TemporaryFile(suffix='.html', delete=False) as fp:
             fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format, index=False).replace('<tr>', '<tr align="right">'), 'utf-8'))
         webbrowser.open(fp.name)
