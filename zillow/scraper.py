@@ -60,9 +60,13 @@ def webprint(values):
         worksheet.set_column('B:H', None, format_float)
         worksheet.set_column('A:A', None, format_date)
         writer.close()
-        print(f"Saving data to {hist_file}\n{df_hist}")
         with tempfile.TemporaryFile(suffix='.html', delete=False) as fp:
-            fp.write(bytes(df_hist.to_html(float_format="{:>10,.2f}".format, index=False).replace('<tr>', '<tr align="right">'), 'utf-8'))
+            _df = df_hist.copy()
+            _df.sort_values(by='Date', ascending=False, inplace=True)
+            _formatter = {k:lambda x: f"{x:,.0f}" for k in columns_to_convert}
+            print(f"Saving data to {hist_file}\n{_df.to_string(formatters=_formatter, index=False)}")
+            _st = _df.to_html(formatters=_formatter, index=False)
+            fp.write(bytes(_st.replace('<tr>', '<tr align="right">'), 'utf-8'))
         webbrowser.open(fp.name)
         time.sleep(2)
         os.unlink(fp.name)
@@ -80,7 +84,7 @@ def report():
         amount = int(scrape(page.read(), pattern))
         total += amount
         values[k] = amount
-        print(f"{k:12}: {amount:>14,.2f}")
+        print(f"{k:12}: {amount:>14,.0f}")
     _vals = pd.DataFrame.from_dict({k: [v] for k, v in values.items()})
     webprint(_vals)
 
