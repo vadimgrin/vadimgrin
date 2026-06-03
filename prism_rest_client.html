@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REST Request Tester</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: Arial, sans-serif;
+    }
+
+    #top-panel {
+        height: 25vh;
+        min-height: 220px;
+        padding: 15px;
+        border-bottom: 1px solid #ccc;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+    }
+
+    #bottom-panel {
+        flex: 1;
+        padding: 10px;
+        overflow: auto;
+        background-color: #ffffff;
+    }
+
+    .form-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 10px;
+    }
+
+    .form-row label {
+        width: 120px;
+        font-weight: bold;
+    }
+
+    .form-row input,
+    .form-row select {
+        flex: 1;
+        max-width: 400px;
+        padding: 6px;
+    }
+
+    button {
+        padding: 8px 20px;
+        cursor: pointer;
+    }
+
+    #response {
+        white-space: pre-wrap;
+        font-family: Consolas, monospace;
+        font-size: 14px;
+    }
+
+    .status {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="top-panel">
+    <div class="form-row">
+        <label for="baseUrl">Base URL</label>
+        <input type="text"
+               id="baseUrl"
+               value="http://localhost:8814/prism/request">
+    </div>
+
+    <div class="form-row">
+        <label for="requestType">Request Type</label>
+        <select id="requestType">
+            <option>Spot</option>
+            <option>Volume</option>
+            <option>Volatility</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="term">Term</label>
+        <select id="term">
+            <option>1w</option>
+            <option>2w</option>
+            <option>1m</option>
+            <option>3m</option>
+            <option>6m</option>
+            <option>1y</option>
+            <option>5y</option>
+            <option>7y</option>
+            <option>10y</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate">
+    </div>
+
+    <div class="form-row">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate">
+    </div>
+
+    <div class="form-row">
+        <button id="submitBtn">Submit</button>
+    </div>
+</div>
+
+<div id="bottom-panel">
+    <div id="status" class="status"></div>
+    <pre id="response"></pre>
+</div>
+
+<script>
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
+    // Set default dates
+    const today = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 7);
+
+    document.getElementById("startDate").value = formatDate(weekAgo);
+    document.getElementById("endDate").value = formatDate(today);
+
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+
+        const baseUrl = document.getElementById("baseUrl").value.trim();
+        const requestType = document.getElementById("requestType").value;
+        const term = document.getElementById("term").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
+        const params = new URLSearchParams({
+            request_type: requestType,
+            term: term,
+            start_date: startDate,
+            end_date: endDate
+        });
+
+        const requestUrl = `${baseUrl}?${params.toString()}`;
+
+        const statusDiv = document.getElementById("status");
+        const responseDiv = document.getElementById("response");
+
+        statusDiv.textContent = `Submitting: ${requestUrl}`;
+        responseDiv.textContent = "";
+
+        try {
+            const response = await fetch(requestUrl, {
+                method: "GET"
+            });
+
+            const text = await response.text();
+
+            statusDiv.textContent =
+                `HTTP ${response.status} ${response.statusText}`;
+
+            responseDiv.textContent = text;
+        }
+        catch (error) {
+            statusDiv.textContent = "Request Failed";
+            responseDiv.textContent =
+                `${error.name}: ${error.message}`;
+        }
+    });
+</script>
+
+</body>
+</html>
